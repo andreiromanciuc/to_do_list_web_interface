@@ -30,9 +30,22 @@ window.ToDoList = {
         }).done(function () {
             ToDoList.getTasks();
         });
-
     },
 
+    updateTask: function (id, done) {
+        let requestBody = {
+            done: done
+        }
+        $.ajax({
+            url: ToDoList.API_BASE_URL  + "?id=" + id,
+            method: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify(requestBody)
+        }).done(function () {
+            ToDoList.getTasks();
+        });
+
+    },
     getTaskRow: function (task) {
         // spread operator (...)
         let formattedDeadLine = new Date(...task.deadline).toLocaleDateString("ro");
@@ -68,9 +81,20 @@ window.ToDoList = {
 
         // capturing the 'submit form' event to bind our function to it
         $("#new-task-form").submit(function (event) {
-            event.preventDefault();
+            event.preventDefault(); 
 
             ToDoList.createTasks();
+        });
+
+        //delegate is necessary here because the element mark done is not present in the page from the beginning,
+        // but injected later on
+        $("#tasks-table").delegate(".mark-done", "change", function () {
+            event.preventDefault();
+
+            // reading value of attributes prefixed with "data-"
+            let taskId = $(this).data("id");
+            let checked = $(this).is(":checked");
+            ToDoList.updateTask(taskId, checked);
         });
 
     }
